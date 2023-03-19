@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView, RedirectView, UpdateView
@@ -9,17 +9,29 @@ from django.views.generic.base import TemplateView
 from Fandango.models import Pegoste
 
 
+GLOBAL_PEGOSTES = Pegoste.objects.all()
+mafufada = GLOBAL_PEGOSTES.values('author').annotate(pub_count=Count('pk')).order_by('-pub_count')[:5]
+top_pegosteadores = User.objects.filter(pk__in=[author['author'] for author in mafufada]).only('username')
+
+GLOBAL_EXTRA_CONTEXT = {
+    'last_pegosteados': GLOBAL_PEGOSTES.order_by('-publish_date')[:5],
+    'top_pegosteadores': top_pegosteadores
+}
+
+
 class HomePage(TemplateView):
     """
     Use of generic view to render homepage.
     """
     template_name = 'Fandango/home.html'
+    extra_context = {**GLOBAL_EXTRA_CONTEXT, **{'author_home': False}}
 
 
 class Pegosteadores(ListView):
     """
     Display existing Fandango blog sites using username.
     """
+
     model = User
     template_name = 'Fandango/pegosteadores.html'
 
@@ -43,6 +55,7 @@ class Pegostes(ListView):
 
         :return: Queryset with pegostes related to a pegosteador ('username')
         """
+
         return self.model.objects.filter(author__username=self.kwargs['username'])
 
 
@@ -55,19 +68,28 @@ class PegosteView(DetailView):
     model = Pegoste
     template_name = 'Fandango/pegoste_view.html'
     slug_field = 'slug'
+    extra_context = {**GLOBAL_EXTRA_CONTEXT, **{'author_home': False}}
 
     def get_queryset(self):
         """
         Overrides DetailView.get_queryset() to check if the pegosteador exists.
 
-        :return: The query set with the pegostes beloging to a pegosteador.
+        :return: The query set with the pegostes belonging to a pegosteador.
         """
 
-        return self.model.objects.filter(author__username=self.kwargs['username'])
+        pegostes_queryset = self.model.objects.filter(author__username=self.kwargs['username'])
+        self.extra_context['recent_pegostes'] = pegostes_queryset.order_by('-publish_date')[:5]
+
+        return pegostes_queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['recents'] = self.get_queryset().filter().order_by('-publish_date')[:5]
+        context['username'] = self.kwargs['username']
+
+        if self.request.user.username == self.kwargs['username'] and self.request.user.is_authenticated:
+            self.extra_context['pegoste_updatable'] = True
+        else:
+            self.extra_context['pegoste_updatable'] = False
 
         return context
 
@@ -82,7 +104,6 @@ class PegosteadorHome(PegosteView):
         """
         Overriding PegosteView.get_object() to get the last pegoste published.
 
-        :param kwargs: Default arguments passed by the class.
         :return: The last published pegoste by a pegosteador.
         """
 
@@ -97,14 +118,22 @@ class PegosteadorHome(PegosteView):
 
         return last_pegoste
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.extra_context['author_home'] = True
+
+        return context
+
 
 class RedirectSlugPegoste(RedirectView):
     """
     This redirect prevents the use of PK in the URL to access a single pegoste, instead a slug will be use, thus
     redirecting to '<username>/pegoste/<slug>' or 'Fandango:pegoste'.
     """
+
     def get_redirect_url(self, *args, **kwargs):
         pegoste = get_object_or_404(Pegoste, pk=kwargs['pk'])
+
         return pegoste.get_absolute_url()
 
 
@@ -113,6 +142,7 @@ class RedirectAuth(RedirectView):
     Simple redirect used after registration of a new pegosteador. This has the porpoise of separating URLs
     dispatching from each application.
     """
+
     def get_redirect_url(self, *args, **kwargs):
         if 'username' in self.kwargs:
             redirect_to = reverse('Fandango:pegosteador_home')
@@ -132,7 +162,7 @@ class AddPegoste(LoginRequiredMixin, CreateView):
     in LoginRequiredMixin is the value in settings.LOGIN_URL, that its default value is 'accounts/login'.
     In this case, LoginRequiredMixin will use defaults.
 
-      Reference:
+    Reference:
         https://docs.djangoproject.com/en/4.1/topics/auth/default/#the-loginrequiredmixin-mixin
         https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-LOGIN_URL
     """
@@ -140,6 +170,16 @@ class AddPegoste(LoginRequiredMixin, CreateView):
     model = Pegoste
     fields = '__all__'
     template_name = 'Fandango/add_update_pegoste.html'
+    extra_context = {**GLOBAL_EXTRA_CONTEXT, **{'add_update': True, 'add_update_view': 'Add Pegoste'}}
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['username'] = self.kwargs['username']
+
+        recent_pegostes = GLOBAL_PEGOSTES.filter(author__username=self.kwargs['username']).order_by('-publish_date')[:5]
+        self.extra_context['recent_pegostes'] = recent_pegostes
+
+        return context
 
 
 # ToDo: Implement AccessMixin to restrict the addition and update of pegostes to the pegosteador logged in.
@@ -153,7 +193,7 @@ class UpdatePegoste(LoginRequiredMixin, UpdateView):
     in LoginRequiredMixin is the value in settings.LOGIN_URL, that its default value is 'accounts/login'.
     In this case, LoginRequiredMixin will use defaults.
 
-      Reference:
+    Reference:
         https://docs.djangoproject.com/en/4.1/topics/auth/default/#the-loginrequiredmixin-mixin
         https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-LOGIN_URL
     """
@@ -161,3 +201,13 @@ class UpdatePegoste(LoginRequiredMixin, UpdateView):
     model = Pegoste
     fields = '__all__'
     template_name = 'Fandango/add_update_pegoste.html'
+    extra_context = {**GLOBAL_EXTRA_CONTEXT, **{'add_update': True, 'add_update_view': 'Update Pegoste'}}
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['username'] = self.kwargs['username']
+
+        recent_pegostes = GLOBAL_PEGOSTES.filter(author__username=self.kwargs['username']).order_by('-publish_date')[:5]
+        self.extra_context['recent_pegostes'] = recent_pegostes
+
+        return context

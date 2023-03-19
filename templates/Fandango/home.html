@@ -1,1 +1,65 @@
-{% extends 'Merequetengue/base_template.html' %}
+{% extends 'Merequetengue/single_page_template.html' %}
+
+{% block title %}
+    Let's get this Merequetengue started!
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-header">Welcome to Fandango!</h1>
+{% endblock %}
+
+{% block breadcrums_placeholder %}
+{% endblock %}
+
+{% block optional_content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="page-header">Recent Pegostes</h2>
+        </div>
+    </div>
+{% endblock %}
+
+<!-- Recent Pegostes -->
+{% block content %}
+    <div class="col-lg-8">
+        {% for last_pegoste in last_pegosteados %}
+
+            <!-- Title -->
+            <h3 class="page-header">
+                <a href="{% url 'Fandango:pegoste' last_pegoste.author.username last_pegoste.slug %}">
+                    {{ last_pegoste.title|title }}
+                </a>
+            </h3>
+
+            <!-- Pegosteador/Date/Time -->
+            <p>
+                <i class="fa fa-clock-o"></i> Posted by <em>{{ last_pegoste.author.username|capfirst }}</em> on {{ last_pegoste.publish_date }}
+            </p>
+
+            <p>
+                {{ last_pegoste.content|linebreaks|truncatewords:100 }}
+            </p>
+
+            <a class="btn btn-primary" href="{% url 'Fandango:pegoste' last_pegoste.author.username last_pegoste.slug %}">
+                Read More
+                <i class="fa fa-angle-right"></i>
+            </a>
+
+            <hr>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block flex_header %}
+    Top Pegosteadores
+{% endblock %}
+
+{% block flex_content %}
+    {% for top_pegosteador in top_pegosteadores %}
+        <li>
+            <a href="{% url 'Fandango:pegosteador_home' top_pegosteador.username %}">
+                {{ top_pegosteador.username }}
+            </a>
+        </li>
+    {% endfor %}
+{% endblock %}

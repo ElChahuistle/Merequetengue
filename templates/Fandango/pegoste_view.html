@@ -1,49 +1,52 @@
-{% extends 'Merequetengue/base_template.html' %}
-
-{% block title %}
-    {% if pegoste %}
-        {{ pegoste.title }}
-    {% else %}
-        I do not think so...
-    {% endif %}
-{% endblock %}
+{% extends 'Merequetengue/single_page_template.html' %}
 
 {% block content %}
+    <!-- Preview Image -->
+    {% if pegoste.image %}
+        <div class="col-lg-2">
+            <img class="img-responsive" src="{{ pegoste.image.url }}" alt="{{ pegoste.image.name }}">
+        </div>
+        <div class="col-lg-6">
+    {% else %}
+        <div class="col-lg-8">
+    {% endif %}
+
+    <!-- Blog Post -->
     {% if pegoste %}
-
-        <h1>{{ pegoste.title }}</h1>
-
-        {% if pegoste.subtitle %}
-            <h2>{{ pegoste.subtitle }}</h2>
-        {% endif %}
-        <p>
-            {{ pegoste.content }}
-        </p>
-
-        {% if pegoste.image %}
-            <p>
-                <img src="{{ pegoste.image.url }}" alt="{{ pegoste.image.name }}">
-            </p>
+        {% if pegoste_updatable %}
+            <a class="btn btn-primary" href="{% url 'Fandango:update_pegoste' user pegoste.slug %}">
+                Update Pegoste
+            </a>
         {% endif %}
 
+        <!-- Post Content -->
+        <p class="lead"> </p>
+
+        {{ pegoste.content|linebreaks }}
+
+        <hr>
+
+        <!-- Date/Time -->
         <p>
-            Pegosteado by <strong>{{ pegoste.author.get_full_name }}</strong>
-            on <em>{{ object.publish_date }}</em>
+            <i class="fa fa-clock-o"></i> Posted by <em>{{ pegoste.author.username }}</em> on {{ object.publish_date }}
         </p>
     {% else %}
-        <p>That pegoste does not exists!</p>
+        <p>Klaatu barada nikto!</p>
     {% endif %}
+
+    </div>
 {% endblock %}
 
-{% block recent %}
-    {% if recents %}
-        Still warm...
-        <ul>
-            {% for recent in recents %}
-                <li><a href="{% url 'Fandango:pegoste' recent.author.username recent.slug %}">{{ recent.title }}</a></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        No recent pegostes
-    {% endif %}
+{% block flex_header %}
+    {{ username|capfirst }}'s recent pegostes
+{% endblock %}
+
+{% block flex_content %}
+    {% for recent in recent_pegostes %}
+        <li>
+            <a href="{% url 'Fandango:pegoste' username recent.slug %}">
+                {{ recent.title|title }}
+            </a>
+        </li>
+    {% endfor %}
 {% endblock %}

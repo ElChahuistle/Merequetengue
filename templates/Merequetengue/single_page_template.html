@@ -1,0 +1,46 @@
+{% extends 'Merequetengue/base_template.html' %}
+
+{% block headings %}
+    <div class="col-lg-12">
+
+        {% block header %}
+            <h1 class="page-header">
+                {% if author_home %}
+                    {{ username|capfirst }}'s Home
+                {% elif add_update %}
+                    {{ add_update_view }}
+                {% else %}
+                    {{ pegoste.title|title }}
+                {% endif %}
+
+                {% if pegoste.subtitle %}
+                    <br><small>{{ pegoste.subtitle }}</small>
+                {% endif %}
+            </h1>
+        {% endblock %}
+
+        {% block breadcrums_placeholder %}
+           <ol class="breadcrumb">
+                <li>
+                    <a href="{% url 'Fandango:home' %}">Home</a>
+                </li>
+
+                {% block breadcrums %}
+                    {% if username %}
+                       <li>
+                            <a href="{% url 'Fandango:pegosteador_home' username %}">{{ username|capfirst }}</a>
+                        </li>
+
+                        {% if add_update %}
+                            <li class="active">{{ add_update_view }}</li>
+                        {% elif not author_home %}
+                            <li class="active">{{ pegoste.title|capfirst }}</li>
+                        {% endif %}
+                    {% endif %}
+                {% endblock %}
+
+            </ol>
+        {% endblock %}
+
+    </div>
+{% endblock %}

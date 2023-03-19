@@ -1,21 +1,36 @@
-{% extends 'Merequetengue/base_template.html' %}
+{% extends 'Merequetengue/single_page_template.html' %}
 
-{% block title %}Who are we?{% endblock %}
+{% block title %}
+    Who are we? (Not Batman, obviously)
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-header">Who are we?</h1>
+{% endblock %}
+
+{% block breadcrums %}
+    <li class="active">Who are we?</li>
+{% endblock %}
 
 {% block content %}
-    <p>We are a group (of one person) dedicated to do any kind of thing to get a good grade for delivering this project.</p>
-    <p>That is why we called the site "Merequetengue", because the ups and downs of learning Django and its advantages.</p>
-    <p>
-    "Fandango" is just another kind of merequetengue, so its very suitable for the name of our main application. Also
-    because the name describes the plurality of a Blog site, in which many people publishes many topics, which will be
-    equivalent to a party (a fandango) with many people talking at the same time about many things.
-    </p>
-    <p>
-    Faithful to Mexican tradition, we are calling our blog posts "Pegostes", which is a kind of messing thing to do,
-    thus authors are our "Pegosteadores".
-    </p>
-    <p>
-    Hopefully, you will find this fandango of pegostes in a merequetengue of your liking.
-    </p>
-    <p>The Team (just me)</p>
+    <div class="col-lg-8">
+        <p>We are a group (of one person) dedicated to do any kind of thing to get a good grade for delivering this project.</p>
+        <p>That is why we called the site "Merequetengue", because the ups and downs of learning Django and its advantages.</p>
+        <p>
+        "Fandango" is just another kind of merequetengue, so its very suitable for the name of our main application. Also
+        because the name describes the plurality of a Blog site, in which many people publishes many topics, which will be
+        equivalent to a party (a fandango) with many people talking at the same time about many things.
+        </p>
+        <p>
+        Faithful to Mexican tradition, we are calling our blog posts "Pegostes", which is a kind of messing thing to do,
+        thus authors are our "Pegosteadores".
+        </p>
+        <p>
+        Hopefully, you will find this fandango of pegostes in a merequetengue of your liking.
+        </p>
+        <p>The Team (just me)</p>
+    </div>
+{% endblock %}
+
+{% block flex %}
 {% endblock %}

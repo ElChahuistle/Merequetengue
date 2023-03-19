@@ -76,7 +76,7 @@ class Pegoste(models.Model):
     >>> new_pegoste.subtitle = 'New subtitle for new title'
     >>> new_pegoste.save()
     >>> new_pegoste
-    <Pegoste: New Title
+    <Pegoste: New Title>
 
     Delete post.
 

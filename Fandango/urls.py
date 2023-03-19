@@ -21,7 +21,6 @@ The order of the paths is no accidental.
         * Otherwise, just display the pegoste.  
 """
 
-
 app_name = 'Fandango'
 urlpatterns = [
     path('', HomePage.as_view(), name='home'),

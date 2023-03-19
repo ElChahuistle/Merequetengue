@@ -1,9 +1,31 @@
-{% extends 'Merequetengue/base_template.html' %}
+{% extends 'Merequetengue/single_page_template.html' %}
 
-{% block title %}Pegosteador, the user!{% endblock %}
+{% block title %}
+    {{ add_update_view }}
+{% endblock %}
 
 {% block content %}
-<form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Save">
+    <div class="col-lg-9">
+        <form method="post">{% csrf_token %}
+            <div class="form-group">
+                {{ form.as_p }}
+            </div>
+
+            <button type="submit" class="btn btn-default">Save</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block flex_header %}
+    {{ username|capfirst }}'s recent pegostes
+{% endblock %}
+
+{% block flex_content %}
+    {% for recent in recent_pegostes %}
+        <li>
+            <a href="{% url 'Fandango:pegoste' username recent.slug %}">
+                {{ recent.title|title }}
+            </a>
+        </li>
+    {% endfor %}
 {% endblock %}
